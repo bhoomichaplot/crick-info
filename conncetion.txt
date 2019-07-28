@@ -1,0 +1,383 @@
+package daiict;
+
+import java.sql.*;
+import java.util.Scanner;
+import java.math.BigDecimal;
+
+public class PostgreSQLJDBC 
+{
+	public static void main(String args[]) 
+	{
+		Connection c = null;
+		try
+		{
+			// Load Postgresql Driver class
+			Class.forName("org.postgresql.Driver");
+			// Using Driver class connect to databased on localhost, port=5432, database=postgres, user=postgres, password=postgres. If cannot connect then exception will be generated (try-catch block)
+			c = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres","postgres", "YOGESH");
+			System.out.println("Opened database successfully");
+			 
+			// Create instance of this class to call other methods
+			PostgreSQLJDBC p = new PostgreSQLJDBC();
+			
+			c.setAutoCommit(false);
+			int run = 0;
+			while(run!=99){
+				//Choice For Query
+				System.out.println("-----------------------------------------------------------------------------");
+				System.out.print(" ");
+				System.out.println("Enter 1 Find name of player who is in indian team and salary greater than 12000 and he is batsman:");
+				System.out.println("Enter 2 Find name of upcoming IPL-series , and location and upcoming date:");
+				System.out.println("Enter 3 Give the name of team who played t20 series on mumbai location on 20th Feb,1995:");
+				System.out.println("Enter 4 Give the detail of all player who played world cup series which umpired by sudhir asnani:");
+			    System.out.println("Enter 5 Get bowler's details of  indian team who played 20-20 series in india under Sudhir Asnani coach:");
+				System.out.println("Enter 6 Insert[Not enter Space Between Word]:");
+				System.out.println("Enter 7 Delete:");
+				System.out.println("Enter 99 To Exit...");
+				System.out.println("Enter Numner To Execcute : ");
+				Scanner  sc = new Scanner(System.in);
+				run = sc.nextInt();
+	
+			      switch(run) {
+			         case 1 :
+			        	 p.firstquery(c);
+			            break;
+			         case 2 :
+			        	 p.secondquery(c);
+			            break;
+			         case 3 :
+			            p.thirdquery(c);
+			        	 break;
+			         case 4 :
+				         p.forthquery(c);  
+			        	 break;
+			         case 5 :
+			        	 p.fifthquery(c);
+			        	 break;       
+			      case 6:
+			        	 p.InsertLocation(c);
+			        	 break;
+			      case 7:
+			    	  	p.deleteLocation(c);
+			      case 99:System.out.println("Exit...");
+			    	  	break;
+				default :
+			            System.out.println("Invalid choice");
+			      }
+		      }
+		   
+			// Call method createCompanyTable to Create Company Table
+			/*p.createCompanyTable(c);
+			p.insertCompanyTable(c);
+			c.setAutoCommit(true);
+			*/
+			// Call method queryEmployeeTable to Create Run SELECT Query in Employee Table
+		//	p.queryLocationTable(c);
+
+			// Call method updEmployeeTable to Create Run UPDATE Query in Employee Table
+			//p.updEmployeeTable(c);
+			
+			c.close();
+		}
+		      
+		catch (Exception e)  
+		{
+			e.printStackTrace();
+			System.err.println(e.getClass().getName()+": "+e.getMessage());
+			System.exit(0);
+		}
+	}
+
+	
+
+	private static void exit(int i) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void queryLocationTable(Connection c) {
+		Statement stmt = null;
+		try
+		{
+			stmt = c.createStatement();
+			ResultSet rs = stmt.executeQuery("SELECT * from mydb.Location");
+			
+			while(rs.next())
+			{
+				// Datatype mapping and functions to use with JDBC is found at https://www.tutorialspoint.com/jdbc/jdbc-data-types.htm
+				String lName, country ;
+				BigDecimal lId;
+				// Employee Infor
+				
+				lId=rs.getBigDecimal(1);//uses column index for retrive value
+				lName = rs.getString("lname");
+				country = rs.getString("country");
+				// Supervisor Infor
+				//sssn = rs.getString("sssn");
+				//sfname = rs.getString("sfname");
+				//ssalary = rs.getBigDecimal("ssalary");
+				
+				
+				System.out.println("Location: ID-" + lId + ", LName-" + lName + ", Contry:" + country);
+			}
+			
+			stmt.close();
+			System.out.println("Table Queried successfully");
+		}
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			System.err.println(e.getClass().getName()+": "+e.getMessage());
+			System.exit(0);
+		}
+
+		
+	}
+	
+///////////  fist query //////////////////
+	//2 Find name of player who is in indian team and salary greater than 12000 and he is batsman.
+	void firstquery(Connection c)
+	{
+		Statement stmt = null;
+		try
+		{
+			stmt = c.createStatement();
+			String sql = "select f_name,salary,tname from mydb.team\r\n" + 
+					"inner join mydb.player on mydb.team.teamid = mydb.player.teamid\r\n" + 
+					"inner join mydb.batsman on mydb.player.playerid = mydb.batsman.playerid\r\n" + 
+					"where mydb.team.tname = 'india'  and mydb.player.salary> 120000\r\n"  ;
+			ResultSet rs = stmt.executeQuery(sql);
+			System.out.println("PlayerName\t"+" "+"Salary\t"+" "+"TeamName");
+			while(rs.next())
+			{
+				
+				String f_name = rs.getString("f_name");
+				int salary = rs.getInt("salary");
+				String t_name = rs.getString("tname");
+			   
+				
+				System.out.println(f_name+"\t"+" "+salary+"\t"+" "+t_name);
+			}
+			stmt.close();
+         
+			System.out.println("show successfully");
+		}
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			System.err.println(e.getClass().getName()+": "+e.getMessage());
+			System.exit(0);
+		}
+	}
+	
+	
+	///second query
+	//3       Find name of upcoming IPL-series , and location and upcoming date.
+	void secondquery(Connection c)
+	{
+		Statement stmt = null;
+		try
+		{
+			stmt = c.createStatement();
+			String sql = "select match_date,s_name,lname from mydb.series\r\n"+
+			"join mydb.upcoming_schedule on mydb.series.upcoming_schedule_sid =  \r\n"+
+			"mydb.upcoming_schedule.up_id inner join mydb.location on mydb.series.location_id =\r\n"+
+			"mydb.location.locationid where mydb.series.s_name = 'ipl' \r\n";
+
+			ResultSet rs = stmt.executeQuery(sql);
+			System.out.println("Match_Date\t"+" "+"Series_Name\t"+" "+"Locaton\t");
+			System.out.println("--------------------------------------------");
+			while(rs.next())
+			{
+				
+				String matchDate = rs.getString("match_date");
+				String series = rs.getString("s_name");
+				String lName = rs.getString("lname");
+			   
+				
+				System.out.println(matchDate+"\t"+" "+series+"\t"+" "+lName);
+			}
+			stmt.close();
+         
+			System.out.println("show successfully");
+		}
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			System.err.println(e.getClass().getName()+": "+e.getMessage());
+			System.exit(0);
+		}
+	}
+	/// third query 
+	//12
+	void thirdquery(Connection c)
+	{
+		Statement stmt = null;
+		try
+		{
+			stmt = c.createStatement();
+			String sql = "Select tname from mydb.team where teamid in(Select teamid from mydb.playedseriesXUmpire"
+					+ " where matchDate='1995-02-20' and seriesid in(Select seriesid from mydb.series "
+					+ " where s_name like 't-20'and location_id in(Select locationid from mydb.location where lname like 'mumbai'))) ";
+
+			ResultSet rs = stmt.executeQuery(sql);
+			System.out.println("TeamName");
+			System.out.println("--------------------------------------------");
+			while(rs.next())
+			{
+				
+				String tname = rs.getString("tname");
+				//String series = rs.getString("s_name");
+				//String lName = rs.getString("lname");
+			   
+				
+				System.out.println(tname);
+			}
+			stmt.close();
+         
+			System.out.println("show successfully");
+		}
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			System.err.println(e.getClass().getName()+": "+e.getMessage());
+			System.exit(0);
+		}
+	}
+   // forth
+	//13
+	void forthquery(Connection c)
+	{
+		Statement stmt = null;
+		try
+		{
+			stmt = c.createStatement();
+			String sql = "Select distinct concat_ws(' ',p.f_name, p.l_name)AS playerfullname, t.tname, u.u_name from mydb.player p "+
+            "inner join mydb.team t on p.teamid = t.teamid " +           
+	        " inner join mydb.playedseriesXumpire sp  on p.playerid=sp.playerid "+
+            "inner join mydb.series s on sp.seriesid=s.seriesid "+
+            "inner join mydb.umpire u on sp.umpireid=u.umpireid "+
+            "where s.s_name like 'world-cup' and u.u_name like 'Sudhir Asnani' " ;
+			ResultSet rs = stmt.executeQuery(sql);
+			System.out.println(sql);
+			System.out.println("PlayerFullName\t"+" "+"Teamname\t"+" "+"Umpirename");
+			while(rs.next())
+			{
+				
+				String f_name = rs.getString("playerfullname");
+				String t_name= rs.getString("tname");
+				String u_name = rs.getString("u_name");
+			   
+				
+				System.out.println(  f_name+"\t"+"    "+  t_name+"\t"+"     "+  u_name);
+			}
+			stmt.close();
+         
+			System.out.println("show successfully");
+		}
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			System.err.println(e.getClass().getName()+": "+e.getMessage());
+			System.exit(0);
+		}
+	}
+	//15
+	//5th
+	void fifthquery(Connection c)
+	{
+		Statement stmt = null;
+		try
+		{
+			stmt = c.createStatement();
+			String sql = "Select Distinct concat_ws(' ',p.f_name, p.l_name)AS playerfullname, t.tname\r\n"+
+			"from mydb.playedseriesxumpire us\r\n"+
+           "inner join mydb.player p on p.teamid=us.teamid\r\n"+
+           "inner join mydb.team t on p.teamid=t.teamid\r\n"+
+           "inner join mydb.series s on us.seriesid=s.seriesid\r\n"+
+           "inner join mydb.bowler bl on us.playerid = bl.playerid\r\n"+
+           "inner join mydb.player pl on bl.playerid = pl.playerid\r\n"+
+           "inner join mydb.location l on s.location_id=l.locationid\r\n"+	
+           "inner join mydb.umpire u on  u.umpireid=us.umpireid\r\n"+	
+           "where t.tname like 'india' and s.s_name like 't-20' and l.lname like 'mumbai' and\r\n"+
+           "u.u_name like 'Sudhir Asnani' \r\n" ;
+			ResultSet rs = stmt.executeQuery(sql);
+			System.out.println(sql);
+			System.out.println("PlayerFullName\t"+" "+"Teamname");
+			System.out.println("-----------------------------------");
+			while(rs.next())
+			{
+				
+				String playerfullname = rs.getString("playerfullname");
+				//String l_name = rs.getString("l_name");
+				String t_name= rs.getString("tname");
+			//	String u_name = rs.getString("u_name");
+			   
+				
+				System.out.println(  playerfullname+"\t"+" "+ t_name);
+			}
+			stmt.close();
+         
+			System.out.println("show successfully");
+		}
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			System.err.println(e.getClass().getName()+": "+e.getMessage());
+			System.exit(0);
+		}
+	}
+	
+	
+	//Insert Value In Location Table
+	void InsertLocation(Connection c) throws SQLException{
+		
+//Getting value from user.
+		System.out.println("Enter Location Details: ");
+		Scanner sc=new Scanner(System.in);
+		System.out.println("Enter Id:");
+		int lId=sc.nextInt();			
+		System.out.println("Enter Name:");
+		String lName=sc.next();
+		System.out.println("Enter Country:");
+		String lCountry=sc.next();
+		Statement stmt=null; 
+		try{
+			stmt=c.createStatement();
+			String insertQ="insert into mydb.location Values("+lId+",'"+lName+"','"+lCountry+"')";
+			System.out.println(insertQ);
+			int i=stmt.executeUpdate(insertQ);
+			if(i>0)
+				System.out.println("Data Inserted." );
+
+		}catch(Exception e){
+			System.out.println("Error In Insert Data... ");
+			e.printStackTrace();
+			c.close();
+		}
+		
+		
+	}
+	
+	
+	//Delete Location
+	private void deleteLocation(Connection c) throws SQLException {
+		Statement stmt=null;
+		System.out.println("Enter Location Id:");
+		Scanner sc=new Scanner(System.in);
+		int lId=sc.nextInt();
+		try{
+			stmt=c.createStatement();
+			String deleteQ="delete from mydb.location where locationid ="+lId;
+			stmt.executeUpdate(deleteQ);
+			System.out.println(deleteQ);
+			System.out.println("Row Deleted.");
+		}catch(Exception e){
+			e.printStackTrace();
+			System.out.println("Error In Delete...");
+			c.close();
+		}
+		
+	}
+	
+}
